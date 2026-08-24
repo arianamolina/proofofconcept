@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nestlé - Certificate Automated</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #ffffff; color: #222; }
+
+        /* Sidebar */
+        .sidebar { width: 240px; background-color: #D6F9D6; border-right: 2px solid #00C04B; padding: 30px 20px; display: flex; flex-direction: column; }
+        .logo { font-size: 38px; font-weight: 800; margin-bottom: 35px; color: #000; }
+        .nav-btn { background-color: #00C04B; color: white; border: none; padding: 12px 18px; border-radius: 4px; font-size: 16px; font-weight: 700; text-align: left; cursor: pointer; }
+
+        /* Main Content */
+        .main { flex: 1; padding: 35px 50px; overflow-y: auto; }
+        .header-title { font-size: 28px; font-weight: 700; margin-bottom: 25px; }
+        .content-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 40px; }
+
+        /* Document Box */
+        .doc-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+        .doc-box { border: 1px solid #444; height: 480px; border-radius: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; background: #fff; }
+        .doc-box input[type="file"] { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .plus-icon { font-size: 50px; color: #444; font-weight: 200; }
+        .preview-frame { width: 100%; height: 100%; border: none; }
+        .btn-new-cert { display: block; margin: 12px auto 0; background: #e8f5e9; border: 1px solid #2e7d32; padding: 5px 16px; border-radius: 15px; font-size: 13px; cursor: pointer; }
+
+        /* Metadata Section */
+        .meta-section h4 { font-size: 15px; font-weight: 500; color: #222; margin-bottom: 20px; }
+        .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 25px; margin-bottom: 20px; }
+        
+        .field-group { display: flex; flex-direction: column; gap: 4px; }
+        .field-header { display: flex; align-items: center; justify-content: space-between; }
+        .field-label-wrapper { display: flex; align-items: center; gap: 6px; }
+        .field-icon { font-size: 14px; }
+        .field-label { font-size: 11px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.3px; }
+        
+        /* Edit Button & Input */
+        .btn-edit { background: none; border: none; cursor: pointer; font-size: 12px; opacity: 0.6; padding: 2px 4px; }
+        .btn-edit:hover { opacity: 1; }
+        .field-value { font-size: 14px; font-weight: 700; color: #000; min-height: 22px; padding-left: 20px; }
+        .field-input { display: none; margin-left: 20px; padding: 3px 6px; font-size: 13px; border: 1px solid #0288D1; border-radius: 3px; font-weight: 600; }
+
+        /* Divider & Status Grids */
+        .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 25px; margin-top: 15px; }
+        .status-val-green { color: green; font-weight: 700; }
+        .status-val-red { color: #d9534f; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">Nestlé</div>
+        <button class="nav-btn">Overview</button>
+    </aside>
+
+    <main class="main">
+        <div class="header-title">Certificate Automated</div>
+
+        <div class="content-grid">
+            <!-- Left: Document View -->
+            <div class="doc-section">
+                <h3>Upload Document</h3>
+                <div class="doc-box" id="dropBox">
+                    <span class="plus-icon" id="plusIcon">+</span>
+                    <iframe id="pdfPreview" class="preview-frame" style="display: none;"></iframe>
+                    <input type="file" id="fileInput" accept="application/pdf">
+                </div>
+                <button class="btn-new-cert" onclick="resetForm()">New Certificate</button>
+            </div>
+
+            <!-- Right: Extracted Metadata -->
+            <div class="meta-section">
+                <h4>Dates when energy was generated</h4>
+
+                <div class="fields-grid">
+                    <!-- FROM DATE -->
+                    <div class="field-group">
+                        <div class="field-header">
+                            <div class="field-label-wrapper"><span class="field-icon">🏷️</span><span class="field-label">FROM DATE</span></div>
+                            <button class="btn-edit" onclick="toggleEdit('fromDate')">✏️</button>
+                        </div>
+                        <div class="field-value" id="fromDate-val">-</div>
+                        <input type="text" class="field-input" id="fromDate-input" onblur="saveEdit('fromDate')" onkeydown="handleKey(event, 'fromDate')">
+                    </div>
+
+                    <!-- TO DATE -->
+                    <div class="field-group">
+                        <div class="field-header">
+                            <div class="field-label-wrapper"><span class="field-icon">ℹ️</span><span class="field-label">TO DATE</span></div>
+                            <button class="btn-edit" onclick="toggleEdit('toDate')">✏️</button>
+                        </div>
+                        <div class="field-value" id="toDate-val">-</div>
+                        <input type="text" class="field-input" id="toDate-input" onblur="saveEdit('toDate')" onkeydown="handleKey(event, 'toDate')">
+                    </div>
+
+                    <!-- COMMISSIONING DATE -->
+                    <div class="field-group">
+                        <div class="field-header">
+                            <div class="field-label-wrapper"><span class="field-icon">📅</span><span class="field-label">COMMISSIONING DATE</span></div>
+                            <button class="btn-edit" onclick="toggleEdit('commDate')">✏️</button>
+                        </div>
+                        <div class="field-value" id="commDate-val">-</div>
+                        <input type="text" class="field-input" id="commDate-input" onblur="saveEdit('commDate')" onkeydown="handleKey(event, 'commDate')">
+                    </div>
+
+                    <!-- SOURCING METHOD -->
+                    <div class="field-group">
+                        <div class="field-header">
+                            <div class="field-label-wrapper"><span class="field-icon">🌐</span><span class="field-label">SOURCING METHOD</span></div>
+                            <button class="btn-edit" onclick="toggleEdit('sourcing')">✏️</button>
+                        </div>
+                        <div class="field-value" id="sourcing-val">-</div>
+                        <input type="text" class="field-input" id="sourcing-input" onblur="saveEdit('sourcing')" onkeydown="handleKey(event, 'sourcing')">
+                    </div>
+
+                    <!-- QUANTITY -->
+                    <div class="field-group">
+                        <div class="field-header">
+                            <div class="field-label-wrapper"><span class="field-icon">✔️</span><span class="field-label">QUANTITY</span></div>
+                            <button class="btn-edit" onclick="toggleEdit('quantity')">✏️</button>
+                        </div>
+                        <div class="field-value" id="quantity-val">-</div>
+                        <input type="number" class="field-input" id="quantity-input" onblur="saveEdit('quantity')" onkeydown="handleKey(event, 'quantity')">
+                    </div>
+
+                    <!-- TECHNOLOGY TYPE -->
+                    <div class="field-group">
+                        <div class="field-header">
+                            <div class="field-label-wrapper"><span class="field-icon">🔗</span><span class="field-label">TECHNOLOGY TYPE</span></div>
+                            <button class="btn-edit" onclick="toggleEdit('techType')">✏️</button>
+                        </div>
+                        <div class="field-value" id="techType-val">-</div>
+                        <input type="text" class="field-input" id="techType-input" onblur="saveEdit('techType')" onkeydown="handleKey(event, 'techType')">
+                    </div>
+
+                    <!-- STANDARD -->
+                    <div class="field-group">
+                        <div class="field-header">
+                            <div class="field-label-wrapper"><span class="field-icon">🔗</span><span class="field-label">STANDARD</span></div>
+                            <button class="btn-edit" onclick="toggleEdit('standard')">✏️</button>
+                        </div>
+                        <div class="field-value" id="standard-val">-</div>
+                        <input type="text" class="field-input" id="standard-input" onblur="saveEdit('standard')" onkeydown="handleKey(event, 'standard')">
+                    </div>
+
+                    <!-- ORIGIN COUNTRIES -->
+                    <div class="field-group">
+                        <div class="field-header">
+                            <div class="field-label-wrapper"><span class="field-icon">🔗</span><span class="field-label">ORIGIN COUNTRIES</span></div>
+                            <button class="btn-edit" onclick="toggleEdit('origin')">✏️</button>
+                        </div>
+                        <div class="field-value" id="origin-val">-</div>
+                        <input type="text" class="field-input" id="origin-input" onblur="saveEdit('origin')" onkeydown="handleKey(event, 'origin')">
+                    </div>
+                </div>
+
+                <!-- Statuses matching the exact same typography -->
+                <div class="status-grid">
+                    <div class="field-group">
+                        <div class="field-header">
+                            <div class="field-label-wrapper"><span class="field-icon">📊</span><span class="field-label">DATA STATUS</span></div>
+                        </div>
+                        <div class="field-value" id="dataStatus-val">-</div>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-header">
+                            <div class="field-label-wrapper"><span class="field-icon">🌱</span><span class="field-label">ALIGNEMENT WITH RE100</span></div>
+                        </div>
+                        <div class="field-value" id="re100Status-val">-</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const state = {
+            hasDocument: false,
+            fromDate: null,
+            toDate: null,
+            commDate: null,
+            sourcing: null,
+            quantity: null,
+            techType: null,
+            standard: null,
+            origin: null
+        };
+
+        const fileInput = document.getElementById('fileInput');
+        const pdfPreview = document.getElementById('pdfPreview');
+        const plusIcon = document.getElementById('plusIcon');
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            pdfPreview.src = URL.createObjectURL(file);
+            pdfPreview.style.display = 'block';
+            plusIcon.style.display = 'none';
+            state.hasDocument = true;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/api/extract', { method: 'POST', body: formData });
+                const data = await res.json();
+
+                state.fromDate = data.from_date;
+                state.toDate = data.to_date;
+                state.commDate = data.commissioning_date;
+                state.sourcing = data.sourcing_method;
+                state.quantity = data.quantity;
+                state.techType = data.technology_type;
+                state.standard = data.standard;
+                state.origin = data.origin_countries;
+
+                render();
+            } catch (err) {
+                console.error("Backend connection error:", err);
+            }
+        });
+
+        function toggleEdit(fieldKey) {
+            const valEl = document.getElementById(`${fieldKey}-val`);
+            const inputEl = document.getElementById(`${fieldKey}-input`);
+            
+            inputEl.value = state[fieldKey] !== null ? state[fieldKey] : '';
+            valEl.style.display = 'none';
+            inputEl.style.display = 'block';
+            inputEl.focus();
+        }
+
+        function saveEdit(fieldKey) {
+            const valEl = document.getElementById(`${fieldKey}-val`);
+            const inputEl = document.getElementById(`${fieldKey}-input`);
+            const newVal = inputEl.value.trim();
+
+            state[fieldKey] = newVal !== '' ? (fieldKey === 'quantity' ? parseFloat(newVal) : newVal) : null;
+
+            inputEl.style.display = 'none';
+            valEl.style.display = 'block';
+            render();
+        }
+
+        function handleKey(e, fieldKey) {
+            if (e.key === 'Enter') saveEdit(fieldKey);
+        }
+
+        function evaluateStatuses() {
+            if (!state.hasDocument) {
+                return { dataStatus: '-', re100: '-' };
+            }
+
+            const mandatory = [state.fromDate, state.toDate, state.commDate, state.quantity, state.origin];
+            const isComplete = mandatory.every(v => v !== null && v !== '' && v !== 0);
+
+            const dataStatus = isComplete ? 'Complete' : 'Lacking data';
+
+            // RE100 Checks: Plant Age < 15 years and Positive Volume
+            let re100 = 'YES';
+            if (state.commDate) {
+                const match = state.commDate.match(/\b(19\d{2}|20\d{2})\b/);
+                if (match) {
+                    const year = parseInt(match[1]);
+                    if (2025 - year > 15) {
+                        re100 = 'No (Plant age > 15 years)';
+                    }
+                }
+            } else {
+                re100 = 'No (Missing COD)';
+            }
+
+            if (!state.quantity || state.quantity <= 0) {
+                re100 = 'No (Invalid Quantity)';
+            }
+
+            return { dataStatus, re100 };
+        }
+
+        function render() {
+            document.getElementById('fromDate-val').innerText = state.fromDate || '-';
+            document.getElementById('toDate-val').innerText = state.toDate || '-';
+            document.getElementById('commDate-val').innerText = state.commDate || '-';
+            document.getElementById('sourcing-val').innerText = state.sourcing || '-';
+            document.getElementById('quantity-val').innerText = state.quantity ? state.quantity.toLocaleString() : '-';
+            document.getElementById('techType-val').innerText = state.techType || '-';
+            document.getElementById('standard-val').innerText = state.standard || '-';
+            document.getElementById('origin-val').innerText = state.origin || '-';
+
+            const { dataStatus, re100 } = evaluateStatuses();
+            document.getElementById('dataStatus-val').innerText = dataStatus;
+
+            const re100El = document.getElementById('re100Status-val');
+            if (re100 === 'YES') {
+                re100El.innerHTML = '<span class="status-val-green">YES</span>';
+            } else if (re100 === '-') {
+                re100El.innerText = '-';
+            } else {
+                re100El.innerHTML = `<span class="status-val-red">${re100}</span>`;
+            }
+        }
+
+        function resetForm() {
+            fileInput.value = '';
+            pdfPreview.style.display = 'none';
+            plusIcon.style.display = 'block';
+            state.hasDocument = false;
+            Object.keys(state).forEach(k => { if (k !== 'hasDocument') state[k] = null; });
+            render();
+        }
+    </script>
+</body>
+</html>
