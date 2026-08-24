@@ -207,7 +207,7 @@
             formData.append('file', file);
 
             try {
-                const res = await fetch('http://127.0.0.1:8000/api/extract', { method: 'POST', body: formData });
+                const res = await fetch('http://127.0.0.1:8080/api/extract', { method: 'POST', body: formData });
                 const data = await res.json();
 
                 state.fromDate = data.from_date;
